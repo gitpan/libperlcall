@@ -247,8 +247,8 @@ namespace JTobey_PerlCall
     switch (ctx)
       {
       case G_ARRAY:
-	retsv = Perl_newRV_noinc ((SV*) Perl_av_make (numret, sp - numret));
 	sp -= numret;
+	retsv = Perl_newRV_noinc ((SV*) Perl_av_make (numret, sp + 1));
 	break;
 
       case G_SCALAR:
@@ -290,7 +290,7 @@ namespace JTobey_PerlCall
 
     try
       {
-	Scalar ret (((sub_one_arg) (void*) (CvROOT (cv)))
+	Scalar ret (((sub_one_arg) CvXSUBANY (cv) .any_ptr)
 		    (SvREFCNT_inc (ST (0))));
 	/* The callback return value is basically a time bomb, an SV with
 	   0 refcount: actually, its refcnt is about to drop to 0 when the
@@ -324,7 +324,7 @@ namespace JTobey_PerlCall
 
     try
       {
-	Scalar ret (((sub_hashref) (void*) (CvROOT (cv)))
+	Scalar ret (((sub_hashref) CvXSUBANY (cv) .any_ptr)
 		    (Scalar (SvREFCNT_inc (ST (0))),
 		     Hashref (Perl_newRV_noinc ((SV*) args))));
 	ST (0) = SvREFCNT_inc (Perl_sv_2mortal (ret .imp));
@@ -353,7 +353,7 @@ namespace JTobey_PerlCall
 
     try
       {
-	List retlist (((sub) (void*) (CvROOT (cv))) (List (args), cx));
+	List retlist (((sub) CvXSUBANY (cv) .any_ptr) (List (args), cx));
 	retsv = SvREFCNT_inc (Perl_sv_2mortal (retlist .get_arrayref () .imp));
       }
     catch (Exception* e)
@@ -376,8 +376,7 @@ namespace JTobey_PerlCall
 	      // Note: List AVs are never magical.
 	      SV** svp = AvARRAY (retav);
 	      for (size_t i = 0; i < sz; i++)
-		// Why ST(i-1)?  Why not ST(i)?  XXX
-		ST (i - 1) = SvREFCNT_inc (Perl_sv_2mortal (svp [i]));
+		ST (i) = SvREFCNT_inc (Perl_sv_2mortal (svp [i]));
 	    }
 	  XSRETURN (sz);
 	}
@@ -412,7 +411,7 @@ namespace JTobey_PerlCall
     fullname .append ("::") .append (name);
     CV* cv = Perl_newXS (const_cast<char*> (fullname .c_str ()),
 			 xs, const_cast<char*> (__FILE__));
-    CvROOT (cv) = (OP*) fn;
+    CvXSUBANY (cv) .any_ptr = fn;
   }
 
   void

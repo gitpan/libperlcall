@@ -64,12 +64,14 @@ test.o: test.cc
 libperlint.so.1:
 	$(CC) -shared -u perl_alloc -u boot_DynaLoader $(PERL_LDFLAGS) \
 		-Wl,-soname,$@ -o $@
+	chmod a+r $@
 
 perlxsi.c:
 	$(PERL) -MExtUtils::Embed -e xsinit
 
 libperlcall.so.1: $(LIBOBJS) perlxsi.o
 	$(CXX) -shared $^ -Wl,-soname,$@ -o $@
+	chmod a+r $@
 
 install: $(LIBHEADERS) libperlcall.so.1 libperlint.so.1
 	test -d $(PREFIX)/include/jtobey || mkdir -p $(PREFIX)/include/jtobey

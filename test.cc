@@ -15,11 +15,8 @@ main (int argc, char** real_argv)
 
   try
     {
-      cerr << "ping: " << Interpreter::ping () << endl;
-      p = Interpreter::vivify ();
-      cerr << "vivify: " << p << endl;
-      cerr << "ping: " << Interpreter::ping () << endl;
-      cerr << "vivify: " << Interpreter::vivify () << endl;
+      const char* argv[] = { "perl", "-we0" };
+      p = new Interpreter (sizeof argv / sizeof argv [0], argv);
     }
   catch (Init_Exception* e)
     {
