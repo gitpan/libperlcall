@@ -1,0 +1,83 @@
+Last modified: 28 March 2000
+
+This is Libperlcall, a C++ library for conveniently calling Perl
+functions and examining Perl data.  The interface is documented in the
+file libperlcall.pod.  It is known to work with Perl 5.6.0 on Linux.
+It will probably require changes to work with non-default Perl
+configurations such as multiplicity or thread support.
+
+Features include:
+
+    * automatic memory management using Perl's reference counts
+
+    * two-way exception handling, Perl->C++ and C++->Perl
+
+    * support for both C++ in a Perl program and Perl embedded in C++
+
+    * support for making C++ functions callable from Perl
+
+    * access to array and hash elements
+
+    * conversion operators for several C++ builtin types.
+
+This is ALPHA software.  It is incomplete and very likely to contain
+bugs.  There is no nice installation script.  The makefile assumes GNU
+Make and the GNU C++ compiler.  If you have these tools and Perl
+installed, you may be able to build by running `make' in the source
+directory.  `make test' builds and runs a program that exercises some
+of the library's functions.  You have to look at test.cc to make sense
+of its output.  `make install' copies the shared libraries into
+/usr/local/lib and header files into /usr/local/include/jtobey.  You
+can override the /usr/local part by `make install PREFIX=/whatever'.
+
+Here is the synopsis from libperlcall.pod:
+
+    #include <jtobey/perlcall.hh>
+    using namespace JTobey_PerlCall;
+
+    Interpreter* interp = vivify ();
+
+    eval_string ("use Cwd;");
+    Scalar cwd = call_function ("cwd");
+    cout << "cwd is " << string (cwd) << endl;
+
+    eval_string ("use File::Glob ':glob';");
+    List args = List () << "~/*.doc"
+                        << call_function ("GLOB_TILDE");
+    List files = call_function ("glob", args, LIST);
+    for (size_t i = 0; i < files.size(); i++)
+        cout << string(files[i]) << endl;
+
+    Scalar doit (const Scalar& n)
+    {
+        return double (n) * double (n);
+    }
+    define_sub ("main", "square", doit);
+    cout << int (eval_string ("square(42)")) << endl;
+
+    try { call_some_perl() }
+    catch (Exception* e) { cerr << e->what(); delete e; }
+    throw new Exception ("Your fault");
+
+
+Copyright (C) 2000 John Tobey
+jtobey@john-edwin-tobey.org  All rights reserved.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; see the file COPYING.  If not, write to the
+   Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+   MA 02111-1307  USA
+
+If included in the official Perl distribution by Larry Wall or his
+assignee ("Pumpking"), it may be distributed under the same terms as
+the official distribution.
